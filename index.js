@@ -2,7 +2,7 @@ import express from "express";
 
 const app = express();
 
-const persons = [
+let persons = [
   {
     id: 1,
     name: "Arto Hellas",
@@ -38,6 +38,18 @@ app.get("/api/persons/:id", (req, res) => {
     });
   }
   res.json(person);
+});
+
+app.delete("/api/persons/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const personToDelete = persons.find(p => p.id === id);
+  if (!personToDelete) {
+    res.status(404).json({
+      message: `Person with id ${id} has already deleted from server`,
+    });
+  }
+  persons = persons.filter(p => p.id !== id);
+  res.status(204).end();
 });
 
 app.get("/api/info", (req, res) => {
