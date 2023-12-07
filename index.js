@@ -38,6 +38,17 @@ function generateID() {
 
 app.post("/api/persons", (req, res) => {
   const person = req.body;
+  if (!person.name || !person.number) {
+    return res.status(400).json({
+      error: "Field name or number is missing. Please fill those fields",
+    });
+  }
+  const hasNewPerson = persons.find(p => p.name === person.name);
+  if (hasNewPerson) {
+    return res.status(400).json({
+      error: `${person.name} is already in use`,
+    });
+  }
   const newPerson = {
     id: generateID(),
     ...person,
