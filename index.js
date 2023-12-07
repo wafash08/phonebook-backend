@@ -1,9 +1,12 @@
 import express from "express";
 import morgan from "morgan";
+import cors from "cors";
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
+app.use(express.static("dist"));
 morgan.token("person", (req, res) => {
   return JSON.stringify(req.body);
 });
@@ -12,7 +15,6 @@ app.use(
     ":method :url :status :res[content-length] - :response-time ms :person"
   )
 );
-app.use(express.static("dist"));
 
 let persons = [
   {
