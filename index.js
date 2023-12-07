@@ -3,8 +3,15 @@ import morgan from "morgan";
 
 const app = express();
 
-app.use(morgan("tiny"));
 app.use(express.json());
+morgan.token("person", (req, res) => {
+  return JSON.stringify(req.body);
+});
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :person"
+  )
+);
 
 let persons = [
   {
