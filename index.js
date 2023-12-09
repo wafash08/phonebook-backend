@@ -61,13 +61,25 @@ app.post("/api/persons", (req, res) => {
 
 app.get("/api/persons/:id", (req, res) => {
   const id = req.params.id;
-  const person = persons.find(p => p.id === Number(id));
+  const person = persons.find(p => p.id === id);
   if (!person) {
     res.status(404).json({
       message: `Person with id ${id} you are looking for is not found`,
     });
   }
   res.json(person);
+});
+
+app.put("/api/persons/:id", (req, res, next) => {
+  const body = req.body;
+  const person = { name: body.name, number: body.number };
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(p => {
+      res.json(p);
+    })
+    .catch(error => {
+      next(error);
+    });
 });
 
 app.delete("/api/persons/:id", (req, res, next) => {
