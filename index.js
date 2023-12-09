@@ -1,6 +1,8 @@
+import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import Person from "./models/person.js";
 
 const app = express();
 
@@ -40,33 +42,21 @@ let persons = [
 ];
 
 app.get("/api/persons", (req, res) => {
-  res.json(persons);
+  Person.find({}).then(p => res.json(p));
 });
 
-function generateID() {
-  const RANGE_OF_ID = 1000000;
-  return Math.floor(Math.random() * RANGE_OF_ID);
-}
-
 app.post("/api/persons", (req, res) => {
-  const person = req.body;
-  if (!person.name || !person.number) {
+  const body = req.body;
+  if (!body.name || !body.number) {
     return res.status(400).json({
       error: "Field name or number is missing. Please fill those fields",
     });
   }
-  const hasNewPerson = persons.find(p => p.name === person.name);
-  if (hasNewPerson) {
-    return res.status(400).json({
-      error: `${person.name} is already in use`,
-    });
-  }
-  const newPerson = {
-    id: generateID(),
-    ...person,
-  };
-  persons = [...persons, newPerson];
-  res.json(newPerson);
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  });
+  person.save().then(p => res.json(p));
 });
 
 app.get("/api/persons/:id", (req, res) => {
@@ -98,7 +88,7 @@ app.get("/api/info", (req, res) => {
   res.send(`<p>Phonebook has info for ${totalPerson} people</p><p>${date}</p>`);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
