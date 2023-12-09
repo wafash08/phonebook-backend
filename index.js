@@ -71,15 +71,10 @@ app.get("/api/persons/:id", (req, res) => {
 });
 
 app.delete("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const personToDelete = persons.find(p => p.id === id);
-  if (!personToDelete) {
-    res.status(404).json({
-      message: `Person with id ${id} has already deleted from server`,
-    });
-  }
-  persons = persons.filter(p => p.id !== id);
-  res.status(204).end();
+  Person.findByIdAndDelete(req.params.id).then(p => {
+    console.log("deleted >> ", p);
+    res.status(204).end();
+  });
 });
 
 app.get("/api/info", (req, res) => {
