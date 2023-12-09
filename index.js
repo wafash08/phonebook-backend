@@ -70,11 +70,15 @@ app.get("/api/persons/:id", (req, res) => {
   res.json(person);
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-  Person.findByIdAndDelete(req.params.id).then(p => {
-    console.log("deleted >> ", p);
-    res.status(204).end();
-  });
+app.delete("/api/persons/:id", (req, res, next) => {
+  Person.findByIdAndDelete(req.params.id)
+    .then(p => {
+      console.log("deleted >> ", p);
+      res.status(204).end();
+    })
+    .catch(error => {
+      next(error);
+    });
 });
 
 app.get("/api/info", (req, res) => {
@@ -82,6 +86,19 @@ app.get("/api/info", (req, res) => {
   const date = new Date();
   res.send(`<p>Phonebook has info for ${totalPerson} people</p><p>${date}</p>`);
 });
+
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return res.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+// this has to be the last loaded middleware.
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
