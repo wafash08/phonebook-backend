@@ -18,34 +18,15 @@ app.use(
   )
 );
 
-let persons = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
-
-app.get("/api/persons", (req, res) => {
-  Person.find({}).then(p => res.json(p));
+app.get("/api/persons", (req, res, next) => {
+  Person.find({})
+    .then(p => res.json(p))
+    .catch(error => {
+      next(error);
+    });
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   const body = req.body;
   if (!body.name || !body.number) {
     return res.status(400).json({
@@ -56,18 +37,27 @@ app.post("/api/persons", (req, res) => {
     name: body.name,
     number: body.number,
   });
-  person.save().then(p => res.json(p));
+  person
+    .save()
+    .then(p => res.json(p))
+    .catch(error => {
+      next(error);
+    });
 });
 
-app.get("/api/persons/:id", (req, res) => {
-  const id = req.params.id;
-  const person = persons.find(p => p.id === id);
-  if (!person) {
-    res.status(404).json({
-      message: `Person with id ${id} you are looking for is not found`,
+app.get("/api/persons/:id", (req, res, next) => {
+  Person.findById(req.params.id)
+    .then(p => {
+      if (!p) {
+        res.status(404).json({
+          message: `Person with id ${id} you are looking for is not found`,
+        });
+      }
+      res.json(p);
+    })
+    .catch(error => {
+      next(error);
     });
-  }
-  res.json(person);
 });
 
 app.put("/api/persons/:id", (req, res, next) => {
@@ -93,10 +83,18 @@ app.delete("/api/persons/:id", (req, res, next) => {
     });
 });
 
-app.get("/api/info", (req, res) => {
-  const totalPerson = persons.length;
-  const date = new Date();
-  res.send(`<p>Phonebook has info for ${totalPerson} people</p><p>${date}</p>`);
+app.get("/api/info", (req, res, next) => {
+  Person.find({})
+    .then(p => {
+      const date = new Date();
+      const totalPerson = p.length;
+      res.send(
+        `<p>Phonebook has info for ${totalPerson} people</p><p>${date}</p>`
+      );
+    })
+    .catch(error => {
+      next(error);
+    });
 });
 
 const errorHandler = (error, req, res, next) => {
